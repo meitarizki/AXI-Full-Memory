@@ -1,7 +1,7 @@
 #include <systemc.h>
-#include "tb.h"
-#include "tb_gpu.h"
-#include "tb_tensor.h"
+#include "load_module.h"
+#include "compute_module.h"
+#include "store_module.h"
 #include "axi_interconnect.h"
 #include "axi_lite_slave.h"
 
@@ -11,6 +11,9 @@ int sc_main(int argc, char* argv[]) {
     // NEW: Dynamic Configuration Wires
     sc_signal<int> sys_cfg_width;
     sc_signal<int> sys_cfg_stride;
+
+    // NEW: Dynamic Starting Address Wires for the 3 Masters
+    sc_signal<sc_uint<32>> sys_start_m0, sys_start_m1, sys_start_m2;
 
     // =========================================================
     // --- 1. SIGNAL DECLARATIONS (The Copper Wires) ---
@@ -51,7 +54,7 @@ int sc_main(int argc, char* argv[]) {
     // =========================================================
     // --- 2. MODULE INSTANTIATION ---
     // =========================================================
-    testbench cpu("CPU"); tb_gpu gpu("GPU"); tb_tensor tensor("TENSOR");
+    load_module cpu("LOAD_MODULE"); compute_module gpu("COMPUTE_MODULE"); store_module tensor("STORE_MODULE");
     axi_interconnect arbiter("ARBITER"); axi_lite_slave memory("MEMORY");
 
     // =========================================================
@@ -60,6 +63,8 @@ int sc_main(int argc, char* argv[]) {
     
     // Solder CPU
     cpu.ACLK(ACLK); arbiter.ACLK(ACLK); cpu.ARESETN(ARESETN); arbiter.ARESETN(ARESETN);
+    cpu.START_ADDR(sys_start_m0); // <-- Solder Dynamic Address Pin
+    
     // CPU Write
     cpu.AWADDR(awaddr_m0); arbiter.AWADDR_M0(awaddr_m0); cpu.AWLEN(awlen_m0); arbiter.AWLEN_M0(awlen_m0);
     cpu.AWVALID(awvalid_m0); arbiter.AWVALID_M0(awvalid_m0); cpu.AWREADY(awready_m0); arbiter.AWREADY_M0(awready_m0);
@@ -79,6 +84,8 @@ int sc_main(int argc, char* argv[]) {
 
     // Solder GPU
     gpu.ACLK(ACLK); gpu.ARESETN(ARESETN);
+    gpu.START_ADDR(sys_start_m1); // <-- Solder Dynamic Address Pin
+    
     // GPU Write
     gpu.AWADDR(awaddr_m1); arbiter.AWADDR_M1(awaddr_m1); gpu.AWLEN(awlen_m1); arbiter.AWLEN_M1(awlen_m1);
     gpu.AWVALID(awvalid_m1); arbiter.AWVALID_M1(awvalid_m1); gpu.AWREADY(awready_m1); arbiter.AWREADY_M1(awready_m1);
@@ -98,6 +105,8 @@ int sc_main(int argc, char* argv[]) {
 
     // Solder Tensor
     tensor.ACLK(ACLK); tensor.ARESETN(ARESETN);
+    tensor.START_ADDR(sys_start_m2); // <-- Solder Dynamic Address Pin
+    
     // Tensor Write
     tensor.AWADDR(awaddr_m2); arbiter.AWADDR_M2(awaddr_m2); tensor.AWLEN(awlen_m2); arbiter.AWLEN_M2(awlen_m2);
     tensor.AWVALID(awvalid_m2); arbiter.AWVALID_M2(awvalid_m2); tensor.AWREADY(awready_m2); arbiter.AWREADY_M2(awready_m2);
@@ -180,6 +189,11 @@ int sc_main(int argc, char* argv[]) {
     // Simulate the Dispatcher sending the matrix dimensions
     sys_cfg_width.write(16);
     sys_cfg_stride.write(32);
+
+    // Simulate the Dispatcher sending the starting addresses
+    sys_start_m0.write(0x0000);
+    sys_start_m1.write(0x1000);
+    sys_start_m2.write(0x2000);
 
     // Ensure no Dispatcher Interrupts fire randomly at startup
     awlock_m0.write(0); arlock_m0.write(0);

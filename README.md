@@ -1,0 +1,7 @@
+# VTA Memory Architecture & Arbitration System
+
+Welcome to the core memory infrastructure for the Versatile Tensor Accelerator pipeline. This repository houses the finalized motherboard, the preemptive round-robin arbiter, and the primary 64KB shared memory array. The complete hardware architecture has been verified via waveform simulation and is ready for the integration of the functional neural network modules.
+
+To maintain a clean and highly modular design, the physical routing infrastructure is deliberately separated from the functional logic. The top-level motherboard file, `vta_system.h`, utilizes generic structural designations for its connections, specifically Master 0, Master 1, and Master 2. When integrating your specific modules, please adhere to the standard functional mapping: the Load module connects directly to the Master 0 socket, the Compute module connects to the Master 1 socket, and the Store module connects to the Master 2 socket. 
+
+In previous iterations, memory collision prevention relied on hardcoding safe zone offsets directly into the master modules. To fully support the upcoming Time-Triggered Dispatcher, the architecture is now entirely dynamic and those hardcoded values have been removed. You no longer need to calculate or hardcode starting addresses inside your state machines. Instead, your module must read from its new

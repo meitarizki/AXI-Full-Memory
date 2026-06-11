@@ -1,10 +1,14 @@
-#ifndef TB_GPU_H
-#define TB_GPU_H
+#ifndef COMPUTE_MODULE_H
+#define COMPUTE_MODULE_H
 
 #include <systemc.h>
 
-SC_MODULE(tb_gpu) {
+SC_MODULE(compute_module) {
     sc_in<bool> ACLK, ARESETN;
+    
+    // NEW: The dynamic starting address pin driven by the top-level system
+    sc_in<sc_uint<32>> START_ADDR; 
+
     sc_out<sc_uint<32>> AWADDR, WDATA; sc_out<sc_uint<8>> AWLEN; sc_out<bool> AWVALID, WVALID, WLAST, BREADY;
     sc_in<bool> AWREADY, WREADY, BVALID; sc_in<sc_uint<2>> BRESP;
     sc_out<sc_uint<32>> ARADDR; sc_out<sc_uint<8>> ARLEN; sc_out<bool> ARVALID, RREADY;
@@ -14,7 +18,8 @@ SC_MODULE(tb_gpu) {
         AWVALID.write(0); WVALID.write(0); WLAST.write(0); BREADY.write(0); ARVALID.write(0); RREADY.write(0);
         wait(50); // Stagger the start time!
 
-        sc_uint<32> current_address = 0x1000; 
+        // NO MORE HARDCODING: Capture the starting address from the new pin
+        sc_uint<32> current_address = START_ADDR.read(); 
         int rows_written = 0;
         
         while (rows_written < 32) { 
@@ -35,7 +40,11 @@ SC_MODULE(tb_gpu) {
         }
 
         wait(50);
-        current_address = 0x1000; int rows_read = 0;
+        
+        // NO MORE HARDCODING: Capture the starting address again for the read phase
+        current_address = START_ADDR.read(); 
+        int rows_read = 0;
+        
         while (rows_read < 32) {
             ARADDR.write(current_address); ARLEN.write(3); ARVALID.write(1);
             do { wait(); } while (ARREADY.read() == 0);
@@ -54,6 +63,6 @@ SC_MODULE(tb_gpu) {
         }
         while(true) wait();
     }
-    SC_CTOR(tb_gpu) { SC_THREAD(drive_test); sensitive << ACLK.pos(); }
+    SC_CTOR(compute_module) { SC_THREAD(drive_test); sensitive << ACLK.pos(); }
 };
 #endif
