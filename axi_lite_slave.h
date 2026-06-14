@@ -105,13 +105,13 @@ SC_MODULE(axi_lite_slave) {
 
         switch (read_state.read()) {
             case r_idle:
-                RVALID.write(0); RLAST.write(0);
+                RVALID.write(0); RLAST.write(0); // <-- This safely turns the pins off on the next clock cycle!
                 if (ARVALID.read() == 1) {
                     r_base_addr = ARADDR.read();     
                     current_r_addr = r_base_addr;    
                     r_x_count = 0;                   
                     
-                    // <-- NEW: Capture the dynamic dimensions from the Dispatcher for this specific burst
+                    // Capture the dynamic dimensions from the Dispatcher for this specific burst
                     active_r_width = CFG_WIDTH.read();
                     active_r_stride = CFG_STRIDE.read();
 
@@ -138,7 +138,7 @@ SC_MODULE(axi_lite_slave) {
                         current_r_addr += 4;
                         r_x_count += 4;
                         
-                        // <-- NEW: Use the dynamic width and stride
+                        // Use the dynamic width and stride
                         if (r_x_count >= active_r_width) { 
                             r_x_count = 0; 
                             r_base_addr = r_base_addr + active_r_stride; 
@@ -146,7 +146,9 @@ SC_MODULE(axi_lite_slave) {
                         }
                         
                         read_burst_count++; read_delay_counter = 0; 
-                        if (read_burst_count == 4) { RVALID.write(0); RLAST.write(0); read_state.write(r_idle); }
+                        
+                        // THE FIX: Only change the state! Do not overwrite the valid/last pins here.
+                        if (read_burst_count == 4) { read_state.write(r_idle); }
                     }
                 }
                 break;
