@@ -8,11 +8,7 @@
 int sc_main(int argc, char* argv[]) {
     sc_clock ACLK("ACLK", 10, SC_NS); sc_signal<bool> ARESETN;
     
-    // NEW: Dynamic Configuration Wires
-    sc_signal<int> sys_cfg_width;
-    sc_signal<int> sys_cfg_stride;
-
-    // NEW: Dynamic Starting Address Wires for the 3 Masters
+    // Dynamic Starting Address Wires for the 3 Masters
     sc_signal<sc_uint<32>> sys_start_m0, sys_start_m1, sys_start_m2;
 
     // =========================================================
@@ -47,7 +43,7 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<bool> arvalid_out, rready_out, arready_in_read, rvalid_in, rlast_in;
     sc_signal<sc_uint<2>> bresp_in, rresp_in;
 
-    // NEW: Dispatcher Lock Wires
+    // Dispatcher Lock Wires
     sc_signal<bool> awlock_m0, awlock_m1, awlock_m2;
     sc_signal<bool> arlock_m0, arlock_m1, arlock_m2;
 
@@ -63,7 +59,7 @@ int sc_main(int argc, char* argv[]) {
     
     // Solder CPU
     cpu.ACLK(ACLK); arbiter.ACLK(ACLK); cpu.ARESETN(ARESETN); arbiter.ARESETN(ARESETN);
-    cpu.START_ADDR(sys_start_m0); // <-- Solder Dynamic Address Pin
+    cpu.START_ADDR(sys_start_m0); 
     
     // CPU Write
     cpu.AWADDR(awaddr_m0); arbiter.AWADDR_M0(awaddr_m0); cpu.AWLEN(awlen_m0); arbiter.AWLEN_M0(awlen_m0);
@@ -72,7 +68,7 @@ int sc_main(int argc, char* argv[]) {
     cpu.WVALID(wvalid_m0); arbiter.WVALID_M0(wvalid_m0); cpu.WREADY(wready_m0); arbiter.WREADY_M0(wready_m0);
     cpu.BRESP(bresp_m0); arbiter.BRESP_M0(bresp_m0); cpu.BVALID(bvalid_m0); arbiter.BVALID_M0(bvalid_m0);
     cpu.BREADY(bready_m0); arbiter.BREADY_M0(bready_m0);
-    arbiter.AWLOCK_M0(awlock_m0); // Solder Write Lock
+    arbiter.AWLOCK_M0(awlock_m0); 
     
     // CPU Read
     cpu.ARADDR(araddr_m0); arbiter.ARADDR_M0(araddr_m0); cpu.ARLEN(arlen_m0); arbiter.ARLEN_M0(arlen_m0);
@@ -80,11 +76,11 @@ int sc_main(int argc, char* argv[]) {
     cpu.RDATA(rdata_m0); arbiter.RDATA_M0(rdata_m0); cpu.RLAST(rlast_m0); arbiter.RLAST_M0(rlast_m0);
     cpu.RVALID(rvalid_m0); arbiter.RVALID_M0(rvalid_m0); cpu.RREADY(rready_m0); arbiter.RREADY_M0(rready_m0);
     cpu.RRESP(rresp_m0); arbiter.RRESP_M0(rresp_m0);
-    arbiter.ARLOCK_M0(arlock_m0); // Solder Read Lock
+    arbiter.ARLOCK_M0(arlock_m0); 
 
     // Solder GPU
     gpu.ACLK(ACLK); gpu.ARESETN(ARESETN);
-    gpu.START_ADDR(sys_start_m1); // <-- Solder Dynamic Address Pin
+    gpu.START_ADDR(sys_start_m1); 
     
     // GPU Write
     gpu.AWADDR(awaddr_m1); arbiter.AWADDR_M1(awaddr_m1); gpu.AWLEN(awlen_m1); arbiter.AWLEN_M1(awlen_m1);
@@ -93,7 +89,7 @@ int sc_main(int argc, char* argv[]) {
     gpu.WVALID(wvalid_m1); arbiter.WVALID_M1(wvalid_m1); gpu.WREADY(wready_m1); arbiter.WREADY_M1(wready_m1);
     gpu.BRESP(bresp_m1); arbiter.BRESP_M1(bresp_m1); gpu.BVALID(bvalid_m1); arbiter.BVALID_M1(bvalid_m1);
     gpu.BREADY(bready_m1); arbiter.BREADY_M1(bready_m1);
-    arbiter.AWLOCK_M1(awlock_m1); // Solder Write Lock
+    arbiter.AWLOCK_M1(awlock_m1); 
     
     // GPU Read
     gpu.ARADDR(araddr_m1); arbiter.ARADDR_M1(araddr_m1); gpu.ARLEN(arlen_m1); arbiter.ARLEN_M1(arlen_m1);
@@ -101,11 +97,11 @@ int sc_main(int argc, char* argv[]) {
     gpu.RDATA(rdata_m1); arbiter.RDATA_M1(rdata_m1); gpu.RLAST(rlast_m1); arbiter.RLAST_M1(rlast_m1);
     gpu.RVALID(rvalid_m1); arbiter.RVALID_M1(rvalid_m1); gpu.RREADY(rready_m1); arbiter.RREADY_M1(rready_m1);
     gpu.RRESP(rresp_m1); arbiter.RRESP_M1(rresp_m1);
-    arbiter.ARLOCK_M1(arlock_m1); // Solder Read Lock
+    arbiter.ARLOCK_M1(arlock_m1); 
 
     // Solder Tensor
     tensor.ACLK(ACLK); tensor.ARESETN(ARESETN);
-    tensor.START_ADDR(sys_start_m2); // <-- Solder Dynamic Address Pin
+    tensor.START_ADDR(sys_start_m2); 
     
     // Tensor Write
     tensor.AWADDR(awaddr_m2); arbiter.AWADDR_M2(awaddr_m2); tensor.AWLEN(awlen_m2); arbiter.AWLEN_M2(awlen_m2);
@@ -114,7 +110,7 @@ int sc_main(int argc, char* argv[]) {
     tensor.WVALID(wvalid_m2); arbiter.WVALID_M2(wvalid_m2); tensor.WREADY(wready_m2); arbiter.WREADY_M2(wready_m2);
     tensor.BRESP(bresp_m2); arbiter.BRESP_M2(bresp_m2); tensor.BVALID(bvalid_m2); arbiter.BVALID_M2(bvalid_m2);
     tensor.BREADY(bready_m2); arbiter.BREADY_M2(bready_m2);
-    arbiter.AWLOCK_M2(awlock_m2); // Solder Write Lock
+    arbiter.AWLOCK_M2(awlock_m2); 
     
     // Tensor Read
     tensor.ARADDR(araddr_m2); arbiter.ARADDR_M2(araddr_m2); tensor.ARLEN(arlen_m2); arbiter.ARLEN_M2(arlen_m2);
@@ -122,11 +118,10 @@ int sc_main(int argc, char* argv[]) {
     tensor.RDATA(rdata_m2); arbiter.RDATA_M2(rdata_m2); tensor.RLAST(rlast_m2); arbiter.RLAST_M2(rlast_m2);
     tensor.RVALID(rvalid_m2); arbiter.RVALID_M2(rvalid_m2); tensor.RREADY(rready_m2); arbiter.RREADY_M2(rready_m2);
     tensor.RRESP(rresp_m2); arbiter.RRESP_M2(rresp_m2);
-    arbiter.ARLOCK_M2(arlock_m2); // Solder Read Lock
+    arbiter.ARLOCK_M2(arlock_m2); 
 
     // Solder Arbiter Out to Memory
     memory.ACLK(ACLK); memory.ARESETN(ARESETN); 
-    memory.CFG_WIDTH(sys_cfg_width); memory.CFG_STRIDE(sys_cfg_stride);
     
     // Memory Write
     arbiter.AWADDR_OUT(awaddr_out); memory.AWADDR(awaddr_out); arbiter.AWLEN_OUT(awlen_out); memory.AWLEN(awlen_out);
@@ -171,24 +166,14 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, rdata_m1, "GPU_RDATA");
     sc_trace(wf, rdata_m2, "TENSOR_RDATA");
     
-    // Base + Stride Write Trackers
+    // Linear Address Trackers
     sc_trace(wf, memory.current_w_addr, "MEM_WRITE_ADDR");
-    sc_trace(wf, memory.w_base_addr, "MEM_WRITE_BASE");
-    sc_trace(wf, memory.w_x_count, "MEM_WRITE_X_COUNT");
-    
-    // Base + Stride Read Trackers
     sc_trace(wf, memory.current_r_addr, "MEM_READ_ADDR");
-    sc_trace(wf, memory.r_base_addr, "MEM_READ_BASE");
-    sc_trace(wf, memory.r_x_count, "MEM_READ_X_COUNT");
 
     // =========================================================
     // --- 5. EXECUTE SIMULATION ---
     // =========================================================
     ARESETN.write(0); 
-
-    // Simulate the Dispatcher sending the matrix dimensions
-    sys_cfg_width.write(16);
-    sys_cfg_stride.write(32);
 
     // Simulate the Dispatcher sending the starting addresses
     sys_start_m0.write(0x0000);
